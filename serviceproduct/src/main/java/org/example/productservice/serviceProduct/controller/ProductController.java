@@ -18,26 +18,21 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
-    // Tạo sản phẩm mới
     @PostMapping
     public ResponseEntity<Map<String, String>> createProduct(
             @RequestHeader("username") String username,
             @RequestBody ProductDTO productDTO) {
 
-        System.out.println("Username from header: " + username);
         Map<String, String> response = new HashMap<>();
 
-        // Kiểm tra xem CategoryId có null không
         if (productDTO.getCategoryId() == null) {
             response.put("error", "Category ID cannot be null");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
 
         try {
-            // Tạo sản phẩm mới
             int result = productService.createProduct(productDTO);
 
-            // Kiểm tra kết quả và trả về phản hồi phù hợp
             if (result == 1) {
                 response.put("message", "Product created successfully by " + username);
                 return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -45,17 +40,14 @@ public class ProductController {
                 response.put("message", "Product creation failed");
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
-
         } catch (IllegalArgumentException e) {
-            // Xử lý lỗi và trả về thông báo lỗi
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
-    // Lấy danh sách sản phẩm theo category_id
     @GetMapping("/{categoryId}")
-    public ResponseEntity<List<ProductDTO>> getProductsByCategoryId(@RequestHeader("username") String username, @PathVariable Integer categoryId) {
+    public ResponseEntity<List<ProductDTO>> getProductsByCategoryId(@PathVariable Integer categoryId) {
         try {
             List<ProductDTO> products = productService.getProductsByCategoryId(categoryId);
             return ResponseEntity.ok(products);
@@ -64,12 +56,11 @@ public class ProductController {
         }
     }
 
-    // Cập nhật sản phẩm
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, String>> updateProduct(@RequestHeader("username") String username, @PathVariable Integer id, @RequestBody ProductDTO productDTO) {
+        Map<String, String> response = new HashMap<>();
         try {
             int result = productService.updateProduct(id, productDTO);
-            Map<String, String> response = new HashMap<>();
             if (result == 1) {
                 response.put("message", "Product updated successfully by " + username);
                 return ResponseEntity.ok(response);
@@ -78,18 +69,16 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         } catch (IllegalArgumentException e) {
-            Map<String, String> response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
-    // Xóa sản phẩm
     @DeleteMapping("/{id}")
     public ResponseEntity<Map<String, String>> deleteProduct(@RequestHeader("username") String username, @PathVariable Integer id) {
+        Map<String, String> response = new HashMap<>();
         try {
             int result = productService.deleteProduct(id);
-            Map<String, String> response = new HashMap<>();
             if (result == 1) {
                 response.put("message", "Product deleted successfully by " + username);
                 return ResponseEntity.ok(response);
@@ -98,15 +87,13 @@ public class ProductController {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
             }
         } catch (IllegalArgumentException e) {
-            Map<String, String> response = new HashMap<>();
             response.put("error", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
 
-    // Lấy sản phẩm theo id
     @GetMapping("/product/{id}")
-    public ResponseEntity<ProductDTO> getProductById(@RequestHeader("username") String username, @PathVariable Integer id) {
+    public ResponseEntity<ProductDTO> getProductById(@PathVariable Integer id) {
         ProductDTO product = productService.getProductById(id);
         if (product != null) {
             return ResponseEntity.ok(product);

@@ -15,7 +15,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public int createProduct(ProductDTO productDTO) {
-        if (productDTO.getCategoryId() != 1 && productDTO.getCategoryId() != 2) {
+        // Kiểm tra categoryId hợp lệ (chỉ nhận categoryId là 1 hoặc 2)
+        if (productDTO.getCategoryId() == null || (productDTO.getCategoryId() != 1 && productDTO.getCategoryId() != 2)) {
             throw new IllegalArgumentException("Invalid category_id. It must be either 1 or 2.");
         }
         return productRepository.createProduct(productDTO);
@@ -23,7 +24,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<ProductDTO> getProductsByCategoryId(Integer categoryId) {
-        if (categoryId != 1 && categoryId != 2) {
+        // Kiểm tra categoryId hợp lệ
+        if (categoryId == null || (categoryId != 1 && categoryId != 2)) {
             throw new IllegalArgumentException("Invalid category_id. It must be either 1 or 2.");
         }
         return productRepository.getProductsByCategoryId(categoryId);
@@ -31,12 +33,17 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO getProductById(Integer id) {
-        return productRepository.getProductById(id);
+        ProductDTO product = productRepository.getProductById(id);
+        if (product == null) {
+            throw new IllegalArgumentException("Product not found with id: " + id);
+        }
+        return product;
     }
 
     @Override
     public int updateProduct(Integer id, ProductDTO productDTO) {
-        if (productDTO.getCategoryId() != 1 && productDTO.getCategoryId() != 2) {
+        // Kiểm tra categoryId hợp lệ khi cập nhật
+        if (productDTO.getCategoryId() == null || (productDTO.getCategoryId() != 1 && productDTO.getCategoryId() != 2)) {
             throw new IllegalArgumentException("Invalid category_id. It must be either 1 or 2.");
         }
         return productRepository.updateProduct(id, productDTO);
@@ -47,4 +54,3 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.deleteProduct(id);
     }
 }
-

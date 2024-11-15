@@ -17,23 +17,20 @@ public class RegisterMapper {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // Phương thức để chuyển đổi từ RegisterCreationRequest sang User
     public User toUser(RegisterCreationRequest registerRequest) {
         User user = new User();
         user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword())); // mã hóa mật khẩu
+        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
         user.setEmail(registerRequest.getEmail());
 
-        // Xác định vai trò của người dùng
-        UserRole role = UserRole.CUSTOMER; // mặc định là CUSTOMER
-        if ("ADMIN".equalsIgnoreCase(registerRequest.getRole())) {
-            role = UserRole.ADMIN;
-        } else if ("STAFF".equalsIgnoreCase(registerRequest.getRole())) {
-            role = UserRole.STAFF;
+        // Xác định role từ request, mặc định là CUSTOMER
+        UserRole role = UserRole.CUSTOMER;
+        try {
+            role = UserRole.valueOf(registerRequest.getRole().toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // Log lỗi nếu cần thiết hoặc giữ mặc định là CUSTOMER
         }
         user.setRole(role);
-
         return user;
     }
 }
-

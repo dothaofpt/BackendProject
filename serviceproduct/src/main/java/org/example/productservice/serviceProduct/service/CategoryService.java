@@ -15,4 +15,3 @@ public interface CategoryService {
 
     int deleteCategory(Integer id);
 }
-

@@ -20,15 +20,14 @@ public class AuthController {
     private UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegisterCreationRequest registerRequest) {  // Chuyển từ UserDTO thành RegisterCreationRequest
-        Map<String, Object> response = userService.registerUser(registerRequest);  // Gọi phương thức registerUser với RegisterCreationRequest
+    public ResponseEntity<Map<String, Object>> registerUser(@RequestBody RegisterCreationRequest registerRequest) {
+        Map<String, Object> response = userService.registerUser(registerRequest);
 
-        // Kiểm tra và trả về các thông báo lỗi khi tên người dùng đã tồn tại hoặc khi đã có ADMIN
-        if (response.containsKey("message") && response.get("message").equals("Username already exists")) {
+        if ("Username already exists".equals(response.get("message"))) {
             return ResponseEntity.status(400).body(response);
         }
-        if (response.containsKey("message") && response.get("message").equals("Only one ADMIN allowed")) {
-            return ResponseEntity.status(403).body(response);  // Trả về lỗi khi vượt quá giới hạn ADMIN
+        if ("Only one ADMIN allowed".equals(response.get("message"))) {
+            return ResponseEntity.status(403).body(response);
         }
         return ResponseEntity.ok(response);
     }
@@ -37,11 +36,10 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> loginUser(@RequestBody UserDTO userDTO) {
         Map<String, String> response = userService.loginUser(userDTO);
 
-        if (response.containsKey("message") && response.get("message").equals("Invalid username or password")) {
+        if ("Invalid username or password".equals(response.get("message"))) {
             return ResponseEntity.status(401).body(response);
         }
-
-        if (response.containsKey("message") && response.get("message").equals("User not found")) {
+        if ("User not found".equals(response.get("message"))) {
             return ResponseEntity.status(404).body(response);
         }
 

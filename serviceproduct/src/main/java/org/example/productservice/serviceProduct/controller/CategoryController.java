@@ -16,7 +16,6 @@ public class CategoryController {
     @Autowired
     private CategoryService categoryService;
 
-    // Tạo mới danh mục
     @PostMapping
     public ResponseEntity<String> createCategory(@RequestHeader("username") String username, @RequestBody CategoryDTO categoryDTO) {
         int result = categoryService.createCategory(categoryDTO);
@@ -27,13 +26,11 @@ public class CategoryController {
         }
     }
 
-    // Lấy tất cả danh mục
     @GetMapping
     public List<CategoryDTO> getAllCategories() {
         return categoryService.getAllCategories();
     }
 
-    // Lấy danh mục theo id
     @GetMapping("/{id}")
     public ResponseEntity<CategoryDTO> getCategoryById(@PathVariable Integer id) {
         CategoryDTO category = categoryService.getCategoryById(id);
@@ -44,7 +41,6 @@ public class CategoryController {
         }
     }
 
-    // Cập nhật danh mục
     @PutMapping("/{id}")
     public ResponseEntity<String> updateCategory(@RequestHeader("username") String username, @PathVariable Integer id, @RequestBody CategoryDTO categoryDTO) {
         int result = categoryService.updateCategory(id, categoryDTO);
@@ -55,7 +51,6 @@ public class CategoryController {
         }
     }
 
-    // Xóa danh mục
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteCategory(@RequestHeader("username") String username, @PathVariable Integer id) {
         int result = categoryService.deleteCategory(id);

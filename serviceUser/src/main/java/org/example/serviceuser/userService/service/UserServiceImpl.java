@@ -25,7 +25,7 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private RegisterMapper registerMapper;  // Inject RegisterMapper
+    private RegisterMapper registerMapper;
 
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -43,16 +43,13 @@ public class UserServiceImpl implements UserService {
     public Map<String, Object> registerUser(RegisterCreationRequest registerRequest) {
         Map<String, Object> response = new HashMap<>();
 
-        // Kiểm tra nếu tên người dùng đã tồn tại
         if (findByUsername(registerRequest.getUsername()).isPresent()) {
             response.put("message", "Username already exists");
             return response;
         }
 
-        // Chuyển đổi RegisterCreationRequest thành User qua RegisterMapper
         User user = registerMapper.toUser(registerRequest);
 
-        // Kiểm tra nếu role là ADMIN thì chỉ cho phép một ADMIN duy nhất
         if (UserRole.ADMIN.equals(user.getRole())) {
             Optional<User> existingAdmin = userRepository.findByRole(UserRole.ADMIN);
             if (existingAdmin.isPresent()) {
@@ -61,10 +58,7 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        // Lưu người dùng mới vào cơ sở dữ liệu
         userRepository.save(user);
-
-        // Phản hồi khi đăng ký thành công
         response.put("message", "User registered successfully");
         response.put("userId", user.getUserId());
         return response;
@@ -73,16 +67,15 @@ public class UserServiceImpl implements UserService {
     @Override
     public Map<String, String> loginUser(UserDTO userDTO) {
         Map<String, String> response = new HashMap<>();
-
         Optional<User> userOptional = findByUsername(userDTO.getUsername());
 
         if (userOptional.isPresent()) {
             User user = userOptional.get();
             if (passwordEncoder.matches(userDTO.getPassword(), user.getPassword())) {
                 response.put("message", "Login successful");
-                String token = jwtUtil.generateToken(userDTO.getUsername());
+                String token = jwtUtil.generateToken(userDTO.getUsername(), user.getRole().toString());
                 response.put("token", token);
-                response.put("role", user.getRole().toString());  // Trả về role
+                response.put("role", user.getRole().toString());
             } else {
                 response.put("message", "Invalid username or password");
             }
@@ -93,4 +86,3 @@ public class UserServiceImpl implements UserService {
         return response;
     }
 }
-

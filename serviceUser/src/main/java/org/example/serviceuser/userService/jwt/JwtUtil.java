@@ -15,8 +15,9 @@ import java.util.Map;
 public class JwtUtil {
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);  // Thêm role vào claims
         return createToken(claims, username);
     }
 
@@ -35,8 +36,8 @@ public class JwtUtil {
         return (extractedUsername.equals(username) && !isTokenExpired(token));
     }
 
-    public String extractUsername(String token) {
-        return extractAllClaims(token).getSubject();
+    public String extractRole(String token) {
+        return (String) extractAllClaims(token).get("role");
     }
 
     private Claims extractAllClaims(String token) {
@@ -49,5 +50,9 @@ public class JwtUtil {
 
     private Date extractExpiration(String token) {
         return extractAllClaims(token).getExpiration();
+    }
+
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
     }
 }

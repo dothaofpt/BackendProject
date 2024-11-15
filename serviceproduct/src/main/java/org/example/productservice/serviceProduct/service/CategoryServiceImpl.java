@@ -15,6 +15,10 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public int createCategory(CategoryDTO categoryDTO) {
+        // Kiểm tra hợp lệ trước khi tạo Category
+        if (categoryDTO.getName() == null || categoryDTO.getName().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be null or empty");
+        }
         return categoryRepository.createCategory(categoryDTO);
     }
 
@@ -25,11 +29,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDTO getCategoryById(Integer id) {
-        return categoryRepository.getCategoryById(id);
+        CategoryDTO category = categoryRepository.getCategoryById(id);
+        if (category == null) {
+            throw new IllegalArgumentException("Category not found with id: " + id);
+        }
+        return category;
     }
 
     @Override
     public int updateCategory(Integer id, CategoryDTO categoryDTO) {
+        // Kiểm tra hợp lệ trước khi cập nhật Category
+        if (categoryDTO.getName() == null || categoryDTO.getName().isEmpty()) {
+            throw new IllegalArgumentException("Category name cannot be null or empty");
+        }
         return categoryRepository.updateCategory(id, categoryDTO);
     }
 
@@ -38,4 +50,3 @@ public class CategoryServiceImpl implements CategoryService {
         return categoryRepository.deleteCategory(id);
     }
 }
-
