@@ -12,13 +12,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Component
 public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Config> {
 
     @Value("${jwt.secret}")
-    private String secretKey;
+    private String secretKey = "mySuperSecretKey12345678901234567890";
 
     public JwtAuthFilter() {
         super(Config.class);
@@ -30,33 +31,53 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             ServerHttpRequest request = exchange.getRequest();
             String path = request.getURI().getPath();
 
+            // Bỏ qua kiểm tra với endpoint /auth/
             if (path.contains("/auth/")) {
-                return chain.filter(exchange);  // Bỏ qua các yêu cầu tới "/auth/"
+                return chain.filter(exchange);
             }
 
+            // Kiểm tra Authorization header
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                 return this.onError(exchange, "Missing authorization header", 401);
             }
 
             String authorizationHeader = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-            String token = authorizationHeader.substring(7);  // Loại bỏ "Bearer "
+            if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+                return this.onError(exchange, "Invalid authorization header", 401);
+            }
+
+            String token = authorizationHeader.substring(7); // Loại bỏ "Bearer "
 
             try {
-                Claims claims = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(token).getBody();
+                Claims claims = Jwts.parser()
+                        .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8))
+                        .parseClaimsJws(token)
+                        .getBody();
                 String username = claims.getSubject();
+                List<String> roles = claims.get("roles", List.class);
 
-                // Thêm thông tin từ token vào request headers
+                // Kiểm tra quyền truy cập nếu cần
+                if (path.contains("/products") || path.contains("/categories")) {
+                    if (!roles.contains("ADMIN")) {
+                        return this.onError(exchange, "Access denied: Admin role required", 403);
+                    }
+                }
+
+                // Thêm thông tin từ token vào header request
                 exchange.getRequest().mutate()
                         .header("username", username)
-                        .header("roles", String.join(",", claims.get("roles", List.class)))
+                        .header("roles", String.join(",", roles))
                         .build();
+
             } catch (SignatureException e) {
                 return this.onError(exchange, "Invalid JWT signature", 401);
             } catch (Exception e) {
                 return this.onError(exchange, "JWT token parsing error", 401);
             }
 
-            return chain.filter(exchange);  // Tiếp tục xử lý yêu cầu
+
+
+            return chain.filter(exchange);
         };
     }
 

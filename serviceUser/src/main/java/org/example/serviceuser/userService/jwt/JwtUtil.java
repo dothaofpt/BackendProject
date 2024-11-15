@@ -7,19 +7,24 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
 public class JwtUtil {
-    private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final SecretKey SECRET_KEY = Keys.hmacShaKeyFor("mySuperSecretKey12345678901234567890".getBytes(StandardCharsets.UTF_8));
+
+    // JwtUtil.java trong Serviceuser
 
     public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("role", role);  // Thêm role vào claims
+        claims.put("roles", List.of(role));  // Lưu role dưới dạng List
         return createToken(claims, username);
     }
+
 
     private String createToken(Map<String, Object> claims, String subject) {
         return Jwts.builder()
@@ -55,4 +60,9 @@ public class JwtUtil {
     public String extractUsername(String token) {
         return extractAllClaims(token).getSubject();
     }
+
+    public List<String> extractRoles(String token) {
+        return (List<String>) extractAllClaims(token).get("roles");
+    }
+
 }

@@ -28,7 +28,7 @@ spring:
             - StripPrefix=2
 
 jwt:
-  secret: "secret"
+  secret: mySuperSecretKey12345678901234567890
 
 eureka:
   client:
