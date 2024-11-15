@@ -1,0 +1,36 @@
+server:
+  port: 8888
+
+app:
+  api-prefix: /api/v1
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      default-filters:
+        - name: JwtAuthFilter
+      routes:
+        - id: serviceuser
+          uri: lb://serviceuser
+          predicates:
+            - Path=${app.api-prefix}/auth/**
+          filters:
+            - StripPrefix=2
+
+        - id: serviceproduct
+          uri: lb://serviceproduct
+          predicates:
+            - Path=${app.api-prefix}/products/**, ${app.api-prefix}/categories/**
+          filters:
+            - StripPrefix=2
+
+jwt:
+  secret: "secret"
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
