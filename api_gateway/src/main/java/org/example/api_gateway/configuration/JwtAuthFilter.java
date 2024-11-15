@@ -31,12 +31,12 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
             ServerHttpRequest request = exchange.getRequest();
             String path = request.getURI().getPath();
 
-            // Bỏ qua kiểm tra với endpoint /auth/
+
             if (path.contains("/auth/")) {
                 return chain.filter(exchange);
             }
 
-            // Kiểm tra Authorization header
+
             if (!request.getHeaders().containsKey(HttpHeaders.AUTHORIZATION)) {
                 return this.onError(exchange, "Missing authorization header", 401);
             }
@@ -46,7 +46,7 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 return this.onError(exchange, "Invalid authorization header", 401);
             }
 
-            String token = authorizationHeader.substring(7); // Loại bỏ "Bearer "
+            String token = authorizationHeader.substring(7);
 
             try {
                 Claims claims = Jwts.parser()
@@ -56,14 +56,14 @@ public class JwtAuthFilter extends AbstractGatewayFilterFactory<JwtAuthFilter.Co
                 String username = claims.getSubject();
                 List<String> roles = claims.get("roles", List.class);
 
-                // Kiểm tra quyền truy cập nếu cần
+
                 if (path.contains("/products") || path.contains("/categories")) {
                     if (!roles.contains("ADMIN")) {
                         return this.onError(exchange, "Access denied: Admin role required", 403);
                     }
                 }
 
-                // Thêm thông tin từ token vào header request
+
                 exchange.getRequest().mutate()
                         .header("username", username)
                         .header("roles", String.join(",", roles))
